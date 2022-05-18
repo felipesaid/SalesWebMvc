@@ -42,7 +42,7 @@ namespace SalesWebMvc.Controllers
                 var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
                 return View(viewModel);
             }
-           await _sellerService.InsertAsync(seller);
+            await _sellerService.InsertAsync(seller);
             return RedirectToAction(nameof(Index));
 
         }
@@ -65,10 +65,19 @@ namespace SalesWebMvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-           await _sellerService.RemoveAsync(id);
-            return RedirectToAction(nameof(Index));
-        }
+            try
+            {
 
+
+                await _sellerService.RemoveAsync(id);
+                return RedirectToAction(nameof(Index));
+
+            }
+            catch (IntegrityException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = "Can't delete seller because he/she has sales." });
+            }
+        }
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -84,7 +93,7 @@ namespace SalesWebMvc.Controllers
             return View(obj);
         }
 
-        public async Task <IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
@@ -96,7 +105,7 @@ namespace SalesWebMvc.Controllers
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
 
-            List<Department> departments =await _departmentService.FindAllAsync();
+            List<Department> departments = await _departmentService.FindAllAsync();
             SellerFormViewModel viewModel = new SellerFormViewModel { Seller = obj, Departments = departments };
             return View(viewModel);
         }
@@ -117,12 +126,12 @@ namespace SalesWebMvc.Controllers
             }
             try
             {
-               await _sellerService.UpdateAsync(seller);
+                await _sellerService.UpdateAsync(seller);
                 return RedirectToAction(nameof(Index));
             }
             catch (ApplicationException e)
             {
-                return RedirectToAction(nameof(Error), new { message = e.Message});
+                return RedirectToAction(nameof(Error), new { message = e.Message });
             }
         }
         public IActionResult Error(string message)
